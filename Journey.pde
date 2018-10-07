@@ -10,7 +10,6 @@ color c1, c2;
 void setup() {
   size(800, 480, P3D);
   stroke(255);
-  smooth();
   noFill();
   cols = w / scale;
   rows = h / scale;
@@ -20,15 +19,13 @@ void setup() {
 }
 
 void draw() {
-  
   background(0);
-
-  flying -= map(mouseX, 0, width, 0.0, 0.06);
+  flying -= map(mouseX, 0, width, 0.0, 0.07);
   float yOffset = flying;
   for (int y=0; y < rows; y++) {
     float xOffset = 0;
     for (int x=0; x < cols; x++) {
-      terrainHeight = map(mouseY, 0, height, 150, 0);
+      terrainHeight = map(mouseY, 0, height, 155, 0);
       terrain[x][y] = map(noise(xOffset, yOffset), 0, 1, -terrainHeight, terrainHeight);
       xOffset += 0.1;
     } 
