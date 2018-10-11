@@ -8,7 +8,8 @@ float[][] terrain;
 color c1, c2;
 
 void setup() {
-  size(800, 480, P3D);
+  //size(800, 480, P3D);
+  fullScreen(P3D);
   stroke(255);
   noFill();
   cols = w / scale;
