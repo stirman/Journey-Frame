@@ -1,16 +1,16 @@
 int cols, rows;
-int scale = 28;
-int w = 1300;
-int h = 660;
+int scale = 30;
+int w = 1200;
+int h = 650;
 float flying = 0;
 float terrainHeight;
 float[][] terrain;
 color c1, c2;
 
 void setup() {
-  //size(800, 480, P3D);
   fullScreen(P3D);
   noCursor();
+  stroke(255);
   noFill();
   cols = w / scale;
   rows = h / scale;
@@ -26,7 +26,6 @@ void draw() {
   for (int y=0; y < rows; y++) {
     float xOffset = 0;
     for (int x=0; x < cols; x++) {
-      //terrainHeight = map(mouseY, 0, height, 155, 0);
       terrainHeight = 155;
       terrain[x][y] = map(noise(xOffset, yOffset), 0, 1, -terrainHeight, terrainHeight);
       xOffset += 0.1;
@@ -40,8 +39,7 @@ void draw() {
   for (int y=0; y < rows-1; y++) {
     beginShape(TRIANGLE_STRIP);
     for (int x=0; x < cols; x++) {
-      //stroke(map(terrain[x][y], 0, rows, 120, 180), 100, map(terrain[x][y], 0, rows, 140, 220), map(y, 0, rows+20, 0, 255));
-      stroke(map(terrain[x][y], terrainHeight*-1, terrainHeight, 0, 255), map(y, 0, rows, 0, 255));
+      stroke(map(terrain[x][y], 0, 100, 150, 255), 125, 255, map(y, 0, rows, 0, 255));
       vertex(x*scale, y*scale, terrain[x][y]);
       vertex(x*scale, (y+1)*scale, terrain[x][y+1]);
     }
