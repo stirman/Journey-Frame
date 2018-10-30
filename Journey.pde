@@ -3,9 +3,15 @@ int scale = 28;
 int w = 1300;
 int h = 660;
 float flying = 0;
-float terrainHeight;
+float terrainHeight = 55;
 float[][] terrain;
 color c1, c2;
+
+import processing.io.*; // import the hardware IO library
+int pin_z = 24;
+int pin_a = 23;
+long value = 0;
+int lastEncoded = 0;
 
 void setup() {
   //size(800, 480, P3D);
@@ -17,6 +23,12 @@ void setup() {
   terrain = new float[cols][rows];
   c1 = color(0, 255);
   c2 = color(0, 0);
+  
+  GPIO.pinMode(pin_z, GPIO.INPUT_PULLUP);
+  GPIO.pinMode(pin_a, GPIO.INPUT_PULLUP); 
+
+  GPIO.attachInterrupt(pin_z, this, "updateEncoder", GPIO.CHANGE);
+  GPIO.attachInterrupt(pin_a, this, "updateEncoder", GPIO.CHANGE);
 }
 
 void draw() {
@@ -27,7 +39,7 @@ void draw() {
     float xOffset = 0;
     for (int x=0; x < cols; x++) {
       //terrainHeight = map(mouseY, 0, height, 155, 0);
-      terrainHeight = 155;
+      //terrainHeight = 55;
       terrain[x][y] = map(noise(xOffset, yOffset), 0, 1, -terrainHeight, terrainHeight);
       xOffset += 0.1;
     } 
@@ -47,4 +59,24 @@ void draw() {
     }
     endShape();
   }
+}
+
+void updateEncoder(int pin) { 
+  int MSB = GPIO.digitalRead(pin_z);
+  int LSB = GPIO.digitalRead(pin_a);
+  int encoded = (MSB << 1) | LSB;
+  int sum = (lastEncoded << 2) | encoded;
+
+  if (sum == unbinary("1101") || sum == unbinary("0100") || sum == unbinary("0010") || sum == unbinary("1011")) {
+    if(terrainHeight < 160) {
+      terrainHeight += 5;
+    }
+  }
+  if (sum == unbinary("1110") || sum == unbinary("0111") || sum == unbinary("0001") || sum == unbinary("1000")) { 
+    if(terrainHeight > 5) {
+      terrainHeight -= 5;
+    }
+  }
+
+  lastEncoded = encoded;
 }
