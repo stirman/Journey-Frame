@@ -3,15 +3,18 @@ int scale = 28;
 int w = 1300;
 int h = 660;
 float flying = 0;
+float speed = 0.025;
 float terrainHeight = 55;
 float[][] terrain;
 color c1, c2;
 
 import processing.io.*; // import the hardware IO library
-int pin_z = 24;
-int pin_a = 23;
-long value = 0;
-int lastEncoded = 0;
+int pin_a = 24;
+int pin_b = 23;
+int lastEncoded1 = 0;
+int pin_c = 20;
+int pin_d = 16;
+int lastEncoded2 = 0;
 
 void setup() {
   //size(800, 480, P3D);
@@ -24,16 +27,20 @@ void setup() {
   c1 = color(0, 255);
   c2 = color(0, 0);
   
-  GPIO.pinMode(pin_z, GPIO.INPUT_PULLUP);
-  GPIO.pinMode(pin_a, GPIO.INPUT_PULLUP); 
+  GPIO.pinMode(pin_a, GPIO.INPUT_PULLUP);
+  GPIO.pinMode(pin_b, GPIO.INPUT_PULLUP);
+  GPIO.pinMode(pin_c, GPIO.INPUT_PULLUP);
+  GPIO.pinMode(pin_d, GPIO.INPUT_PULLUP);
 
-  GPIO.attachInterrupt(pin_z, this, "updateEncoder", GPIO.CHANGE);
-  GPIO.attachInterrupt(pin_a, this, "updateEncoder", GPIO.CHANGE);
+  GPIO.attachInterrupt(pin_a, this, "updateTerrain", GPIO.CHANGE);
+  GPIO.attachInterrupt(pin_b, this, "updateTerrain", GPIO.CHANGE);
+  GPIO.attachInterrupt(pin_c, this, "updateSpeed", GPIO.CHANGE);
+  GPIO.attachInterrupt(pin_d, this, "updateSpeed", GPIO.CHANGE);
 }
 
 void draw() {
   background(0);
-  flying -= 0.025;
+  flying -= speed;
   float yOffset = flying;
   for (int y=0; y < rows; y++) {
     float xOffset = 0;
@@ -61,22 +68,42 @@ void draw() {
   }
 }
 
-void updateEncoder(int pin) { 
-  int MSB = GPIO.digitalRead(pin_z);
-  int LSB = GPIO.digitalRead(pin_a);
+void updateTerrain(int pin) { 
+  int MSB = GPIO.digitalRead(pin_a);
+  int LSB = GPIO.digitalRead(pin_b);
   int encoded = (MSB << 1) | LSB;
-  int sum = (lastEncoded << 2) | encoded;
+  int sum = (lastEncoded1 << 2) | encoded;
 
   if (sum == unbinary("1101") || sum == unbinary("0100") || sum == unbinary("0010") || sum == unbinary("1011")) {
     if(terrainHeight < 160) {
-      terrainHeight += 5;
+      terrainHeight += 3;
     }
   }
   if (sum == unbinary("1110") || sum == unbinary("0111") || sum == unbinary("0001") || sum == unbinary("1000")) { 
     if(terrainHeight > 5) {
-      terrainHeight -= 5;
+      terrainHeight -= 3;
     }
   }
 
-  lastEncoded = encoded;
+  lastEncoded1 = encoded;
+}
+
+void updateSpeed(int pin) { 
+  int MSB = GPIO.digitalRead(pin_c);
+  int LSB = GPIO.digitalRead(pin_d);
+  int encoded = (MSB << 1) | LSB;
+  int sum = (lastEncoded2 << 2) | encoded;
+
+  if (sum == unbinary("1101") || sum == unbinary("0100") || sum == unbinary("0010") || sum == unbinary("1011")) {
+    if(speed > 0) {
+      speed -= 0.0015;
+    }
+  } 
+  if (sum == unbinary("1110") || sum == unbinary("0111") || sum == unbinary("0001") || sum == unbinary("1000")) { 
+    if(speed < 0.07) {
+      speed += 0.0015;
+    }
+  }
+
+  lastEncoded2 = encoded;
 }
